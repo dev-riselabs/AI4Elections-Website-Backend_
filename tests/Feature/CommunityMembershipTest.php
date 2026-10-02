@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Mail\CommunityMembershipReceived;
 use App\Models\CommunityMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class CommunityMembershipTest extends TestCase
@@ -12,6 +14,8 @@ class CommunityMembershipTest extends TestCase
 
     public function test_person_can_join_the_community_with_required_consent(): void
     {
+        Mail::fake();
+
         $response = $this->postJson('/api/community-memberships', $this->validMembership());
 
         $response
@@ -26,6 +30,12 @@ class CommunityMembershipTest extends TestCase
         $this->assertNotNull($membership->community_consented_at);
         $this->assertTrue($membership->email_updates);
         $this->assertNotNull($membership->email_updates_consented_at);
+
+        Mail::assertQueued(CommunityMembershipReceived::class, function (CommunityMembershipReceived $mail): bool {
+            return $mail->hasTo('alex@example.com')
+                && $mail->membership->id === CommunityMembership::first()->id
+                && str_contains($mail->render(), 'Hello Alex,');
+        });
     }
 
     public function test_resubmitting_updates_the_existing_membership_and_revokes_email_updates(): void
@@ -50,6 +60,7 @@ class CommunityMembershipTest extends TestCase
 
     public function test_community_membership_requires_explicit_community_consent(): void
     {
+        Mail::fake();
         $payload = $this->validMembership();
         $payload['community_consent'] = false;
 
@@ -58,6 +69,7 @@ class CommunityMembershipTest extends TestCase
             ->assertJsonValidationErrors(['community_consent']);
 
         $this->assertDatabaseCount('community_memberships', 0);
+        Mail::assertNothingOutgoing();
     }
 
     private function validMembership(): array

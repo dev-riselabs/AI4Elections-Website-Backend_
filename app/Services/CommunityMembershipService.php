@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Mail\CommunityMembershipReceived;
 use App\Models\CommunityMembership;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Mail;
 
 class CommunityMembershipService
 {
@@ -13,7 +15,7 @@ class CommunityMembershipService
         $emailUpdates = (bool) ($validatedData['email_updates'] ?? false);
         $membershipData = Arr::except($validatedData, ['email_updates']);
 
-        return CommunityMembership::updateOrCreate(
+        $membership = CommunityMembership::updateOrCreate(
             ['email' => $validatedData['email']],
             [
                 ...$membershipData,
@@ -23,5 +25,9 @@ class CommunityMembershipService
                 'email_updates_consented_at' => $emailUpdates ? $now : null,
             ],
         );
+
+        Mail::to($membership->email)->queue(new CommunityMembershipReceived($membership));
+
+        return $membership;
     }
 }

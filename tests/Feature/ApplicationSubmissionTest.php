@@ -29,7 +29,8 @@ class ApplicationSubmissionTest extends TestCase
             'status' => 'submitted',
         ]);
 
-        $this->assertSame('Public policy', Application::first()->responses['academic_field']);
+        $this->assertSame('Public policy', Application::first()->academic_field);
+        $this->assertSame(['Early concept'], Application::first()->idea_stage);
 
         Mail::assertQueued(ApplicationReceived::class, function (ApplicationReceived $mail): bool {
             return $mail->hasTo('alex@example.com')
@@ -54,6 +55,51 @@ class ApplicationSubmissionTest extends TestCase
 
         $this->assertDatabaseCount('applications', 0);
         Mail::assertNothingOutgoing();
+    }
+
+    public function test_applicant_without_a_solution_idea_can_submit_without_solution_details(): void
+    {
+        Mail::fake();
+        $payload = $this->validApplication();
+        $payload['has_solution_idea'] = false;
+        unset(
+            $payload['problem_to_solve'],
+            $payload['affected_people'],
+            $payload['proposed_solution'],
+            $payload['technology_contribution'],
+            $payload['beneficiaries'],
+            $payload['differentiation'],
+        );
+
+        $this->postJson('/api/applications', $payload)
+            ->assertCreated();
+
+        $this->assertDatabaseHas('applications', [
+            'email' => 'alex@example.com',
+            'has_solution_idea' => false,
+            'problem_to_solve' => null,
+        ]);
+    }
+
+    public function test_solution_details_are_required_when_applicant_has_an_idea(): void
+    {
+        $payload = $this->validApplication();
+        unset($payload['problem_to_solve']);
+
+        $this->postJson('/api/applications', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['problem_to_solve']);
+    }
+
+    public function test_accessibility_support_is_required_when_applicant_requests_it(): void
+    {
+        $payload = $this->validApplication();
+        $payload['accessibility_requirements'] = true;
+        unset($payload['accessibility_support']);
+
+        $this->postJson('/api/applications', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['accessibility_support']);
     }
 
     private function validApplication(): array

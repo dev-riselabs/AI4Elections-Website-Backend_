@@ -12,7 +12,7 @@ Route::get('/user', function (Request $request) {
 Route::get('/status', function () {
     return response()->json([
         'status' => 'online',
-        'name' => 'AI4Elections Backend API',
+        'name' => '#AI4Elections Backend API',
         'framework' => 'Laravel '.app()->version(),
         'timestamp' => now()->toIso8601String(),
     ]);

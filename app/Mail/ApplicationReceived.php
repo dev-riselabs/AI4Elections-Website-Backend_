@@ -19,7 +19,7 @@ class ApplicationReceived extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'We received your AI4Elections application',
+            subject: 'We received your #AI4Elections application',
         );
     }
 

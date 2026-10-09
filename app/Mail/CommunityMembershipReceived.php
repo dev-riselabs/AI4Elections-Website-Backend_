@@ -19,7 +19,7 @@ class CommunityMembershipReceived extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome to the AI4Elections Community of Practice',
+            subject: 'Welcome to the #AI4Elections Community of Practice',
         );
     }
 

@@ -77,6 +77,9 @@ class ApplicationSubmissionTest extends TestCase
             $payload['technology_contribution'],
             $payload['beneficiaries'],
             $payload['differentiation'],
+            $payload['idea_stage'],
+            $payload['has_prototype'],
+            $payload['prototype_link'],
         );
 
         $this->postJson('/api/applications', $payload)
@@ -97,6 +100,16 @@ class ApplicationSubmissionTest extends TestCase
         $this->postJson('/api/applications', $payload)
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['problem_to_solve']);
+    }
+
+    public function test_idea_stage_and_prototype_answer_are_required_when_applicant_has_an_idea(): void
+    {
+        $payload = $this->validApplication();
+        unset($payload['idea_stage'], $payload['has_prototype']);
+
+        $this->postJson('/api/applications', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['idea_stage', 'has_prototype']);
     }
 
     public function test_accessibility_support_is_required_when_applicant_requests_it(): void

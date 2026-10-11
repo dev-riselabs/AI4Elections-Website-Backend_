@@ -8,6 +8,12 @@
 </head>
 
 <body>
+
+    <div>
+        <img src="{{ $message->embed(public_path('ai4-logo.png')) }}" alt="AI4ELECTIONS LOGO" width="180"
+            style="height:auto;display:block;margin:0 auto;max-width:180px;" />
+    </div>
+    <br />
     <h1>New #AI4Elections application submitted</h1>
 
     <table>

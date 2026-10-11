@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\CommunityMembershipReceived;
+use App\Mail\CommunityMembershipSubmittedNotification;
 use App\Models\CommunityMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -35,6 +36,13 @@ class CommunityMembershipTest extends TestCase
             return $mail->hasTo('alex@example.com')
                 && $mail->membership->id === CommunityMembership::first()->id
                 && str_contains($mail->render(), 'Hello Alex,');
+        });
+
+        Mail::assertQueued(CommunityMembershipSubmittedNotification::class, function (CommunityMembershipSubmittedNotification $mail): bool {
+            return $mail->hasTo(config('mail.from.address'))
+                && $mail->membership->id === CommunityMembership::first()->id
+                && str_contains($mail->render(), 'alex@example.com')
+                && str_contains($mail->render(), 'Research');
         });
     }
 

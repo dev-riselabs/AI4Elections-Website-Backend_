@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\ApplicationReceived;
+use App\Mail\ApplicationSubmittedNotification;
 use App\Models\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -37,6 +38,13 @@ class ApplicationSubmissionTest extends TestCase
                 && $mail->application->id === Application::first()->id
                 && str_contains($mail->render(), 'Hello Alex,')
                 && str_contains($mail->render(), (string) $mail->application->id);
+        });
+
+        Mail::assertQueued(ApplicationSubmittedNotification::class, function (ApplicationSubmittedNotification $mail): bool {
+            return $mail->hasTo(config('mail.from.address'))
+                && $mail->application->id === Application::first()->id
+                && str_contains($mail->render(), 'alex@example.com')
+                && str_contains($mail->render(), 'Public policy');
         });
     }
 

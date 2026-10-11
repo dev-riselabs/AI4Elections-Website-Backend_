@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Mail\CommunityMembershipReceived;
+use App\Mail\CommunityMembershipSubmittedNotification;
 use App\Models\CommunityMembership;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Mail;
@@ -27,6 +28,7 @@ class CommunityMembershipService
         );
 
         Mail::to($membership->email)->queue(new CommunityMembershipReceived($membership));
+        // Mail::to(config('mail.from.address'))->queue(new CommunityMembershipSubmittedNotification($membership));
 
         return $membership;
     }

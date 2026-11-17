@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 
 class StoreCommunityMembershipRequest extends FormRequest
@@ -31,7 +32,14 @@ class StoreCommunityMembershipRequest extends FormRequest
             'country' => ['required', 'string', 'max:100'],
             'state' => ['required', 'string', 'max:100'],
             'city' => ['required', 'string', 'max:100'],
-            'application_type' => ['required', 'string', 'max:120'],
+            'application_type' => [
+                'required',
+                'string',
+                Rule::in([
+                    'Elections Community of Practice',
+                    'Elections Development Hub',
+                ]),
+            ],
             'organization' => ['required', 'string', 'max:200'],
             'areas_of_interest' => ['required', 'string', 'max:200'],
             'participation_preference' => ['required', 'string', 'max:200'],

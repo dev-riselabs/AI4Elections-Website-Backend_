@@ -27,6 +27,7 @@ class CommunityMembershipTest extends TestCase
         $membership = CommunityMembership::firstOrFail();
 
         $this->assertSame('alex@example.com', $membership->email);
+        $this->assertSame('Elections Community of Practice', $membership->application_type);
         $this->assertTrue($membership->community_consent);
         $this->assertNotNull($membership->community_consented_at);
         $this->assertTrue($membership->email_updates);
@@ -80,6 +81,34 @@ class CommunityMembershipTest extends TestCase
         Mail::assertNothingOutgoing();
     }
 
+    public function test_person_can_choose_the_elections_development_hub(): void
+    {
+        $payload = $this->validMembership();
+        $payload['application_type'] = 'Elections Development Hub';
+
+        $this->postJson('/api/community-memberships', $payload)
+            ->assertCreated();
+
+        $this->assertDatabaseHas('community_memberships', [
+            'email' => 'alex@example.com',
+            'application_type' => 'Elections Development Hub',
+        ]);
+    }
+
+    public function test_community_membership_rejects_application_types_outside_the_community_options(): void
+    {
+        foreach (['Individual', 'Team', 'Organization'] as $applicationType) {
+            $payload = $this->validMembership();
+            $payload['application_type'] = $applicationType;
+
+            $this->postJson('/api/community-memberships', $payload)
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors(['application_type']);
+        }
+
+        $this->assertDatabaseCount('community_memberships', 0);
+    }
+
     private function validMembership(): array
     {
         return [
@@ -90,7 +119,7 @@ class CommunityMembershipTest extends TestCase
             'country' => 'United States',
             'state' => 'California',
             'city' => 'Oakland',
-            'application_type' => 'Individual',
+            'application_type' => 'Elections Community of Practice',
             'organization' => 'Civic Lab',
             'areas_of_interest' => 'Research',
             'participation_preference' => 'Mentorship',

@@ -27,6 +27,7 @@ class CommunityMembershipTest extends TestCase
         $membership = CommunityMembership::firstOrFail();
 
         $this->assertSame('alex@example.com', $membership->email);
+        $this->assertSame('Female', $membership->gender);
         $this->assertSame('Elections Community of Practice', $membership->application_type);
         $this->assertTrue($membership->community_consent);
         $this->assertNotNull($membership->community_consented_at);
@@ -109,6 +110,18 @@ class CommunityMembershipTest extends TestCase
         $this->assertDatabaseCount('community_memberships', 0);
     }
 
+    public function test_community_membership_accepts_only_male_or_female_gender_values(): void
+    {
+        $payload = $this->validMembership();
+        $payload['gender'] = 'Other';
+
+        $this->postJson('/api/community-memberships', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['gender']);
+
+        $this->assertDatabaseCount('community_memberships', 0);
+    }
+
     private function validMembership(): array
     {
         return [
@@ -116,6 +129,7 @@ class CommunityMembershipTest extends TestCase
             'last_name' => 'Rivera',
             'email' => ' Alex@Example.com ',
             'phone' => '+1 555 0100',
+            'gender' => 'Female',
             'country' => 'United States',
             'state' => 'California',
             'city' => 'Oakland',

@@ -29,6 +29,7 @@ class StoreCommunityMembershipRequest extends FormRequest
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:40'],
+            'gender' => ['nullable', 'string', Rule::in(['Male', 'Female'])],
             'country' => ['required', 'string', 'max:100'],
             'state' => ['required', 'string', 'max:100'],
             'city' => ['required', 'string', 'max:100'],

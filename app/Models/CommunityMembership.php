@@ -11,6 +11,7 @@ class CommunityMembership extends Model
         'last_name',
         'email',
         'phone',
+        'gender',
         'country',
         'state',
         'city',
